@@ -51,8 +51,7 @@ class body:
 		pyxel.rect(self.bodyX[num]*self.WIDTH,self.bodyY[num]*self.HEIGHT,self.WIDTH,self.HEIGHT,color)
 
 	def erase(self):
-		for i in range (len(self.bodyX)):
-			pyxel.rect(self.bodyX[i]*self.WIDTH,self.bodyY[i]*self.HEIGHT,self.WIDTH,self.HEIGHT,0)
+		pyxel.rect(0,0,160,112,0)
 		self.bodyX.clear()
 		self.bodyY.clear()
 		
@@ -86,10 +85,11 @@ class body:
 					clashed=True
 		return clashed
 			
-	def shrink(self):
+	def shrink(self,miss):
 		blength=len(self.bodyX)
 		if blength>self.length:
-			self.put(blength-1)
+			if miss==False:
+				self.put(blength-1)
 			del self.bodyX[-1]
 			del self.bodyY[-1]
 
@@ -213,6 +213,7 @@ class App:
 	
 	def draw(self):
 		clashed=False
+		MISS=False
 		if self.fps % 5 == 0:
 			if self.scene==self.PLAY:
 				self.invector=False
@@ -224,6 +225,7 @@ class App:
 					pyxel.text(100,113,"MISS!",7)
 					pyxel.play(1,2)
 					self.scene=self.MISS
+					MISS=True
 					if self.snake.length>self.lengthmax:
 						self.lengthmax=self.snake.length
 				self.snake.put(1)
@@ -232,7 +234,7 @@ class App:
 					self.snake.length=self.snake.length+1
 					self.textbody()
 					pyxel.play(1,1)
-				self.snake.shrink()
+				self.snake.shrink(MISS)
 			elif self.scene==self.END:
 				sys.exit()
 				
