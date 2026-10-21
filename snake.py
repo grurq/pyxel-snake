@@ -1,8 +1,7 @@
 import sys
 import pyxel
+
 class body:
-	x=0
-	y=0
 	WIDTH=8
 	HEIGHT=8
 	HCOLOR=10
@@ -20,27 +19,25 @@ class body:
 	の順である。xの方向へは移動できない
 	"""
 	def __init__(self):
-		putx=0
-		puty=0
-		self.x=pyxel.rndi(4,16)
-		self.y=pyxel.rndi(4,8)
+		x=pyxel.rndi(4,16)
+		y=pyxel.rndi(4,8)
 		self.vector=pyxel.rndi(1,4)
 		if self.vector==1: # 上向き
 			for i in range(self.length):
-				self.bodyX.append(self.x)
-				self.bodyY.append(self.y+i)
+				self.bodyX.append(x)
+				self.bodyY.append(y+i)
 		elif self.vector==2: # 右向き
 			for i in range(self.length) : 
-				self.bodyX.append(self.x-i)
-				self.bodyY.append(self.y)
+				self.bodyX.append(x-i)
+				self.bodyY.append(y)
 		elif self.vector==3: # 下向き
 			for i in range(self.length) : 
-				self.bodyX.append(self.x)
-				self.bodyY.append(self.y-i)
+				self.bodyX.append(x)
+				self.bodyY.append(y-i)
 		elif self.vector==4: # 左向き
 			for i in range(self.length) : 
-				self.bodyX.append(self.x+i)
-				self.bodyY.append(self.y)			
+				self.bodyX.append(x+i)
+				self.bodyY.append(y)			
 				
 	def put(self,num):
 		color=0
@@ -51,7 +48,6 @@ class body:
 		pyxel.rect(self.bodyX[num]*self.WIDTH,self.bodyY[num]*self.HEIGHT,self.WIDTH,self.HEIGHT,color)
 
 	def erase(self):
-		pyxel.rect(0,0,160,112,0)
 		self.bodyX.clear()
 		self.bodyY.clear()
 		
@@ -85,11 +81,10 @@ class body:
 					clashed=True
 		return clashed
 			
-	def shrink(self,miss):
+	def shrink(self):
 		blength=len(self.bodyX)
 		if blength>self.length:
-			if miss==False:
-				self.put(blength-1)
+			self.put(blength-1)
 			del self.bodyX[-1]
 			del self.bodyY[-1]
 
@@ -107,8 +102,6 @@ class feed:
 	def put(self):
 		pyxel.rect(self.X*self.WIDTH,self.Y*self.HEIGHT,self.WIDTH,self.HEIGHT,0)
 		pyxel.circ(self.X*self.WIDTH+self.RADUIS,self.Y*self.HEIGHT+self.RADUIS,self.RADUIS-1,self.FCOLOR)
-	def erase(self):
-		pyxel.rect(self.X*self.WIDTH,self.Y*self.HEIGHT,self.WIDTH,self.HEIGHT,0)
 	
 class App:
 	fps=0
@@ -123,6 +116,7 @@ class App:
 	END=4
 	lengthmax=5
 	invector=False
+
 	def __init__(self):
 		pyxel.init(160, 120,title="SNAKE GAME by grurqApps 2026")
 		pyxel.load("snake.pyxres")
@@ -131,6 +125,7 @@ class App:
 		# 以下の行は初期設定として後でメソッド化
 		self.ready()
 		pyxel.run(self.update, self.draw)
+
 	def feedput(self):
 		put=False
 		putx=0
@@ -144,8 +139,7 @@ class App:
 					put=False
 		self.fruit.X=putx
 		self.fruit.Y=puty
-		self.fruit.put()
-				
+		self.fruit.put()				
 			
 	def ready(self):
 		self.fps=0
@@ -165,10 +159,15 @@ class App:
 		body = f"BODY:{self.snake.length:03}"
 		pyxel.rect(30,113,32,6,0)
 		pyxel.text(30,113,body,7)
+
 	def textlengthmax(self):
 		lengthmax = f"MAX:{self.lengthmax:03}"
 		pyxel.rect(64,113,28,6,0)
 		pyxel.text(64,113,lengthmax,7)
+
+	def cls(self):
+		pyxel.rect(0,0,160,112,0)
+		pyxel.rect(100,113,20,6,0)	
 		
 	def update(self):
 		if self.scene==self.PLAY and ( pyxel.btnp(pyxel.KEY_I) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP)) and self.snake.vector != 3: #上
@@ -189,9 +188,8 @@ class App:
 					self.invector=True
 		if self.scene==self.MISS:
 			if pyxel.btnp(pyxel.KEY_SPACE) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
-				self.fruit.erase()
 				self.snake.erase()
-				pyxel.rect(100,113,20,6,0)	
+				self.cls()
 				self.ready()	
 		elif self.scene==self.READY:
 			if pyxel.btnp(pyxel.KEY_SPACE) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
@@ -213,14 +211,12 @@ class App:
 	
 	def draw(self):
 		clashed=False
-		MISS=False
 		if self.fps % 5 == 0:
 			if self.scene==self.PLAY:
 				self.invector=False
 				clashed=self.snake.extend()
 				# if self.fps % 10 ==0:
 				pyxel.play(0,0)
-				self.snake.put(0)
 				if clashed==True:
 					pyxel.text(100,113,"MISS!",7)
 					pyxel.play(1,2)
@@ -228,13 +224,15 @@ class App:
 					MISS=True
 					if self.snake.length>self.lengthmax:
 						self.lengthmax=self.snake.length
-				self.snake.put(1)
+					return
 				if self.fruit.X==self.snake.bodyX[0] and self.fruit.Y==self.snake.bodyY[0]:
 					self.feedput()
 					self.snake.length=self.snake.length+1
 					self.textbody()
 					pyxel.play(1,1)
-				self.snake.shrink(MISS)
+				self.snake.shrink()
+				self.snake.put(0)
+				self.snake.put(1)
 			elif self.scene==self.END:
 				sys.exit()
 				
