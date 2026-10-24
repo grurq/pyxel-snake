@@ -75,11 +75,6 @@ class body:
 			self.bodyY[0]=13
 		if self.bodyY[0]>13:
 			self.bodyY[0]=0
-		for i in range(len(self.bodyX)):
-			if i>1:
-				if self.bodyX[0]==self.bodyX[i] and self.bodyY[0]==self.bodyY[i]:
-					clashed=True
-		return clashed
 			
 	def shrink(self):
 		blength=len(self.bodyX)
@@ -167,7 +162,18 @@ class App:
 
 	def cls(self):
 		pyxel.rect(0,0,160,112,0)
-		pyxel.rect(100,113,20,6,0)	
+		pyxel.rect(100,113,20,6,0)
+	
+	def clashed(self, ate):
+		clashed=False
+		MAX=len(self.snake.bodyX)
+		if clashed==False:
+			MAX=MAX-1
+		for i in range(MAX):
+			if i>1:
+				if self.snake.bodyX[0]==self.snake.bodyX[i] and self.snake.bodyY[0]==self.snake.bodyY[i]:
+					clashed=True
+		return clashed
 		
 	def update(self):
 		if self.scene==self.PLAY and ( pyxel.btnp(pyxel.KEY_I) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_UP)) and self.snake.vector != 3: #上
@@ -210,26 +216,25 @@ class App:
 			self.fps = 0 
 	
 	def draw(self):
-		clashed=False
+		ate=False
 		if self.fps % 5 == 0:
 			if self.scene==self.PLAY:
 				self.invector=False
-				clashed=self.snake.extend()
-				# if self.fps % 10 ==0:
+				self.snake.extend()	
 				pyxel.play(0,0)
-				if clashed==True:
-					pyxel.text(100,113,"MISS!",7)
-					pyxel.play(1,2)
-					self.scene=self.MISS
-					MISS=True
-					if self.snake.length>self.lengthmax:
-						self.lengthmax=self.snake.length
-					return
 				if self.fruit.X==self.snake.bodyX[0] and self.fruit.Y==self.snake.bodyY[0]:
 					self.feedput()
 					self.snake.length=self.snake.length+1
 					self.textbody()
 					pyxel.play(1,1)
+					ate=True
+				if self.clashed(ate)==True:
+					pyxel.text(100,113,"MISS!",7)
+					pyxel.play(1,2)
+					self.scene=self.MISS
+					if self.snake.length>self.lengthmax:
+						self.lengthmax=self.snake.length
+					return
 				self.snake.shrink()
 				self.snake.put(0)
 				self.snake.put(1)
